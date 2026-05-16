@@ -168,16 +168,17 @@
           <input id="note-title" required placeholder="A catchy title..." />
         </div>
         <div class="form-group">
-          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
             <label for="note-content" style="margin-bottom: 0;">Content</label>
-            <label class="toggle-switch">
-              <input type="checkbox" id="hindi-toggle">
-              <span class="toggle-slider"></span>
-              <span class="toggle-label">Hindi Mode</span>
-            </label>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span id="lang-status" style="font-size: 0.8rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em;">English</span>
+              <button id="hindi-toggle-btn" class="theme-toggle" title="Switch Language" type="button" style="width: 44px; height: 44px; border-radius: 50%; font-weight: 800; font-size: 0.9rem;">
+                हि
+              </button>
+            </div>
           </div>
           <textarea id="note-content" required placeholder="Start typing..."></textarea>
-          <small id="hindi-hint" class="hidden" style="color: var(--primary); font-size: 0.8rem; margin-top: 0.25rem; display: block;">Transliteration active: Type 'namaste' and press space</small>
+          <small id="hindi-hint" class="hidden" style="color: var(--primary); font-size: 0.8rem; margin-top: 0.25rem; display: block;">Transliteration active: Type in English and press Space</small>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-close="modal-note">Discard</button>

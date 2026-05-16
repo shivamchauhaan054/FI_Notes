@@ -3,6 +3,7 @@ const REFRESH_KEY = "fi_notes_refresh_token";
 const EMAIL_KEY = "fi_notes_user_email";
 const THEME_KEY = "fi_notes_theme";
 let googleOAuthEnabled = false;
+let hindiEnabled = false;
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -38,7 +39,7 @@ async function transliterate(text) {
 }
 
 async function handleHindiInput(e) {
-  if (!$("#hindi-toggle")?.checked) return;
+  if (!hindiEnabled) return;
   
   if (e.key === " " || e.key === "Enter") {
     const textarea = e.target;
@@ -63,6 +64,21 @@ async function handleHindiInput(e) {
       }
     }
   }
+}
+
+function toggleHindi() {
+  hindiEnabled = !hindiEnabled;
+  const btn = $("#hindi-toggle-btn");
+  const status = $("#lang-status");
+  const hint = $("#hindi-hint");
+  
+  if (btn) btn.classList.toggle("active", hindiEnabled);
+  if (status) {
+    status.textContent = hindiEnabled ? "Hindi" : "English";
+  }
+  if (hint) hint.classList.toggle("hidden", !hindiEnabled);
+  
+  if (hindiEnabled) $("#note-content")?.focus();
 }
 
 function getToken() {
@@ -376,7 +392,11 @@ function openNewNote() {
   $("#note-id").value = "";
   $("#note-title").value = "";
   $("#note-content").value = "";
-  if ($("#hindi-toggle")) $("#hindi-toggle").checked = false;
+  hindiEnabled = true; toggleHindi(); // This will turn it OFF initially because toggleHindi flips the current state
+  // Let's be explicit
+  hindiEnabled = false;
+  $("#hindi-toggle-btn")?.classList.remove("active");
+  $("#lang-status") && ($("#lang-status").textContent = "English");
   $("#hindi-hint")?.classList.add("hidden");
   hideAlert($("#modal-note-alert"));
   openModal("modal-note");
@@ -390,7 +410,9 @@ async function openEditNote(id) {
     $("#note-id").value = note.id;
     $("#note-title").value = note.title;
     $("#note-content").value = note.content;
-    if ($("#hindi-toggle")) $("#hindi-toggle").checked = false;
+    hindiEnabled = false;
+    $("#hindi-toggle-btn")?.classList.remove("active");
+    $("#lang-status") && ($("#lang-status").textContent = "English");
     $("#hindi-hint")?.classList.add("hidden");
     openModal("modal-note");
   } catch (err) {
@@ -584,16 +606,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const noteContent = $("#note-content");
   const noteTitle = $("#note-title");
-  const hindiToggle = $("#hindi-toggle");
-  const hindiHint = $("#hindi-hint");
+  const hindiToggleBtn = $("#hindi-toggle-btn");
 
-  if (hindiToggle) {
+  if (hindiToggleBtn) {
     if (noteContent) noteContent.addEventListener("keyup", handleHindiInput);
     if (noteTitle) noteTitle.addEventListener("keyup", handleHindiInput);
-    
-    hindiToggle.addEventListener("change", () => {
-      hindiHint?.classList.toggle("hidden", !hindiToggle.checked);
-    });
+    hindiToggleBtn.addEventListener("click", toggleHindi);
   }
 
   handleOAuthCallback();

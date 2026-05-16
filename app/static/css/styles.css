@@ -662,3 +662,10 @@ body.light-mode .note-card:hover {
   user-select: none;
 }
 
+.theme-toggle.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 0 15px var(--primary-glow);
+}
+
