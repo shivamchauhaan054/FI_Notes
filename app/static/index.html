@@ -26,6 +26,7 @@
       </button>
       <nav class="nav-links">
         <a href="/docs" target="_blank" rel="noopener">Docs</a>
+        <button id="btn-header-login" class="btn btn-secondary btn-sm" type="button">Sign In</button>
         <span id="user-badge" class="user-badge hidden"></span>
         <button id="btn-logout" class="btn btn-secondary btn-sm hidden" type="button">Log out</button>
       </nav>
@@ -41,6 +42,10 @@
             The most secure way to store and share your thoughts. Powered by 
             Google OAuth and end-to-end encryption principles.
           </p>
+          <div class="hero-actions" style="margin-top: 2.5rem; display: flex; gap: 1rem; justify-content: center;">
+            <button type="button" class="btn btn-primary btn-lg btn-get-started" style="padding: 1rem 2.5rem; font-size: 1.1rem; border-radius: 50px; box-shadow: 0 10px 20px var(--primary-glow);">Get Started Free</button>
+            <button type="button" class="btn btn-secondary btn-lg btn-learn-more" style="padding: 1rem 2.5rem; font-size: 1.1rem; border-radius: 50px;">Learn More</button>
+          </div>
         </div>
 
         <div class="features-grid">
@@ -61,7 +66,15 @@
           </div>
         </div>
 
-        <section class="auth-section-wrapper">
+    </section>
+
+    <section id="view-auth" class="container hidden">
+      <div class="auth-page-container">
+        <button type="button" class="btn-back-home" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 2rem; font-weight: 600;">
+          ← Back to Home
+        </button>
+
+        <section class="auth-section-wrapper" style="margin: 0 auto;">
           <div id="auth-tabs" class="auth-tabs">
             <button type="button" class="auth-tab active" data-tab="login">Log In</button>
             <button type="button" class="auth-tab" data-tab="register">Sign Up</button>

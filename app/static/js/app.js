@@ -9,6 +9,14 @@ const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
 function initTheme() {
+  document.querySelectorAll(".btn-get-started").forEach(btn => {
+    btn.addEventListener("click", showAuthView);
+  });
+  document.querySelectorAll(".btn-back-home").forEach(btn => {
+    btn.addEventListener("click", showGuestView);
+  });
+  $("#btn-header-login")?.addEventListener("click", showAuthView);
+
   const saved = localStorage.getItem(THEME_KEY);
   if (saved === "light") {
     document.body.classList.add("light-mode");
@@ -200,6 +208,7 @@ function showGuestView() {
 
 async function showAppView() {
   $("#view-guest")?.classList.add("hidden");
+  $("#view-auth")?.classList.add("hidden");
   $("#view-app")?.classList.remove("hidden");
   
   try {
@@ -213,6 +222,22 @@ async function showAppView() {
   
   $("#user-badge")?.classList.remove("hidden");
   $("#btn-logout")?.classList.remove("hidden");
+  $("#btn-header-login")?.classList.add("hidden");
+}
+
+function showGuestView() {
+  $("#view-app")?.classList.add("hidden");
+  $("#view-auth")?.classList.add("hidden");
+  $("#view-guest")?.classList.remove("hidden");
+  $("#user-badge")?.classList.add("hidden");
+  $("#btn-logout")?.classList.add("hidden");
+  $("#btn-header-login")?.classList.remove("hidden");
+}
+
+function showAuthView() {
+  $("#view-app")?.classList.add("hidden");
+  $("#view-guest")?.classList.add("hidden");
+  $("#view-auth")?.classList.remove("hidden");
 }
 
 function openModal(id) {
@@ -716,12 +741,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   handleOAuthCallback();
-  if (getToken() && !new URLSearchParams(window.location.search).has("token")) {
-    showAppView();
+  const token = getToken();
+  if (token && !new URLSearchParams(window.location.search).has("token")) {
+    showAppView().catch(() => showGuestView());
     loadNotes();
-    return;
-  }
-  if (!getToken()) {
+  } else {
     showGuestView();
     loadAuthStatus();
   }
