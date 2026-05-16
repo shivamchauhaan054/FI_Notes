@@ -21,8 +21,8 @@ class Settings:
     refresh_token_expire_days: int = int(
         os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "7")
     )
-    jwt_issuer: str = os.getenv("JWT_ISSUER", "notes-api")
-    jwt_audience: str = os.getenv("JWT_AUDIENCE", "notes-app")
+    jwt_issuer: str = os.getenv("JWT_ISSUER", "fi-notes-api")
+    jwt_audience: str = os.getenv("JWT_AUDIENCE", "fi-notes-app")
     otp_expire_minutes: int = int(os.getenv("OTP_EXPIRE_MINUTES", "10"))
 
     app_base_url: str = os.getenv("APP_BASE_URL", "http://127.0.0.1:8000")

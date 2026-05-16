@@ -1,6 +1,6 @@
-# Notes API
+# FI Notes
 
-Production-ready REST API for a multi-user Notes application built with FastAPI, SQLAlchemy, and SQLite.
+Production-ready REST API for a multi-user FI Notes application built with FastAPI, SQLAlchemy, and SQLite.
 
 ## Tech Stack
 

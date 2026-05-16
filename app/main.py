@@ -13,7 +13,7 @@ init_db()
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 app = FastAPI(
-    title="Notes API",
+    title="FI Notes",
     version="1.0.0",
     description="REST API with JWT Bearer authentication (access + refresh tokens).",
 )

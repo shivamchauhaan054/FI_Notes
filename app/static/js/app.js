@@ -1,6 +1,6 @@
-const TOKEN_KEY = "notes_access_token";
-const REFRESH_KEY = "notes_refresh_token";
-const EMAIL_KEY = "notes_user_email";
+const TOKEN_KEY = "fi_notes_access_token";
+const REFRESH_KEY = "fi_notes_refresh_token";
+const EMAIL_KEY = "fi_notes_user_email";
 let googleOAuthEnabled = false;
 
 const $ = (sel) => document.querySelector(sel);

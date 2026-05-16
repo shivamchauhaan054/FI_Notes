@@ -18,12 +18,12 @@ def smtp_configured() -> bool:
 
 
 def send_otp_email(to_email: str, otp: str, purpose: str = "verify your account") -> None:
-    subject = f"Your Notes App verification code: {otp}"
+    subject = f"Your FI Notes verification code: {otp}"
     html = f"""
     <html>
       <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #1a2332;">
         <div style="max-width: 480px; margin: 0 auto; padding: 24px;">
-          <h2 style="color: #6366f1;">Notes App</h2>
+          <h2 style="color: #6366f1;">FI Notes</h2>
           <p>Use this code to {purpose}:</p>
           <p style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #6366f1;">{otp}</p>
           <p>This code expires in {settings.otp_expire_minutes} minutes.</p>
@@ -33,7 +33,7 @@ def send_otp_email(to_email: str, otp: str, purpose: str = "verify your account"
     </html>
     """
     text = (
-        f"Your Notes App verification code is: {otp}\n"
+        f"Your FI Notes verification code is: {otp}\n"
         f"It expires in {settings.otp_expire_minutes} minutes.\n"
         f"If you did not request this, ignore this email."
     )
