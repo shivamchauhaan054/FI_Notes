@@ -17,8 +17,10 @@ function initTheme() {
 }
 
 function toggleTheme() {
+  console.log("Toggling theme...");
   const isLight = document.body.classList.toggle("light-mode");
   localStorage.setItem(THEME_KEY, isLight ? "light" : "dark");
+  console.log("New theme is:", isLight ? "light" : "dark");
 }
 
 function getToken() {
@@ -262,9 +264,9 @@ async function completeLogin(data, email) {
 }
 
 function escapeHtml(str) {
-  const p = document.createElement("p");
-  p.textContent = str;
-  return p.innerHTML;
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
 }
 
 async function loadNotes() {
@@ -325,11 +327,7 @@ function renderNotes(notes) {
   });
 }
 
-function escapeHtml(str) {
-  const div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
-}
+
 
 function openNewNote() {
   $("#modal-note-heading").textContent = "New note";
@@ -531,7 +529,12 @@ $$(".modal-overlay").forEach((overlay) => {
 
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
-  $("#theme-toggle")?.addEventListener("click", toggleTheme);
+  const themeBtn = document.getElementById("theme-toggle");
+  if (themeBtn) {
+    themeBtn.addEventListener("click", toggleTheme);
+  } else {
+    console.warn("Theme toggle button not found in DOM");
+  }
   handleOAuthCallback();
   if (getToken() && !new URLSearchParams(window.location.search).has("token")) {
     showAppView();
