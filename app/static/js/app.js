@@ -385,12 +385,17 @@ function renderNotes(notes, append = false) {
   const html = notes
     .map(
       (note) => `
-    <article class="note-card" data-id="${note.id}">
-      <h3>${escapeHtml(note.title)}</h3>
+    <article class="note-card ${note.is_pinned ? "is-pinned" : ""}" data-id="${note.id}">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>${escapeHtml(note.title)}</h3>
+        ${note.is_pinned ? '<span class="note-pin-indicator" title="Pinned">📌</span>' : ""}
+      </div>
       <p class="content-preview">${escapeHtml(note.content)}</p>
       <p class="note-meta">Updated ${formatDate(note.updated_at)}</p>
       <div class="note-actions">
+        <button type="button" class="btn btn-secondary btn-sm btn-pin" data-id="${note.id}">${note.is_pinned ? "Unpin" : "Pin"}</button>
         <button type="button" class="btn btn-secondary btn-sm btn-edit" data-id="${note.id}">Edit</button>
+        <button type="button" class="btn btn-secondary btn-sm btn-history" data-id="${note.id}">History</button>
         <button type="button" class="btn btn-secondary btn-sm btn-share" data-id="${note.id}">Share</button>
         <button type="button" class="btn btn-danger btn-sm btn-delete" data-id="${note.id}">Delete</button>
       </div>
@@ -405,8 +410,14 @@ function renderNotes(notes, append = false) {
     grid.innerHTML = html;
   }
 
+  grid.querySelectorAll(".btn-pin").forEach((btn) => {
+    btn.addEventListener("click", () => togglePin(Number(btn.dataset.id)));
+  });
   grid.querySelectorAll(".btn-edit").forEach((btn) => {
     btn.addEventListener("click", () => openEditNote(Number(btn.dataset.id)));
+  });
+  grid.querySelectorAll(".btn-history").forEach((btn) => {
+    btn.addEventListener("click", () => openNoteHistory(Number(btn.dataset.id)));
   });
   grid.querySelectorAll(".btn-share").forEach((btn) => {
     btn.addEventListener("click", () => openShareNote(Number(btn.dataset.id)));
@@ -414,6 +425,42 @@ function renderNotes(notes, append = false) {
   grid.querySelectorAll(".btn-delete").forEach((btn) => {
     btn.addEventListener("click", () => deleteNote(Number(btn.dataset.id)));
   });
+}
+
+async function togglePin(id) {
+  try {
+    await api(`/notes/${id}/pin`, { method: "PATCH" });
+    await loadNotes();
+  } catch (err) {
+    showAlert($("#notes-alert"), err.message);
+  }
+}
+
+async function openNoteHistory(id) {
+  const content = $("#history-content");
+  if (content) content.innerHTML = "<p style='padding: 2rem; text-align: center;'>Loading history...</p>";
+  openModal("modal-history");
+
+  try {
+    const history = await api(`/notes/${id}/history`);
+    if (!history || !history.length) {
+      content.innerHTML = "<p style='padding: 2rem; text-align: center;'>No history found for this note.</p>";
+      return;
+    }
+
+    content.innerHTML = history.map(v => `
+      <div class="history-item">
+        <div class="history-item-header">
+          <span class="history-version-badge">Version ${v.version_number}</span>
+          <span class="history-date">${formatDate(v.created_at)}</span>
+        </div>
+        <h4>${escapeHtml(v.title)}</h4>
+        <p>${escapeHtml(v.content)}</p>
+      </div>
+    `).join("");
+  } catch (err) {
+    if (content) content.innerHTML = `<p style='padding: 2rem; text-align: center; color: var(--danger);'>${err.message}</p>`;
+  }
 }
 
 

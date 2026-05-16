@@ -669,3 +669,69 @@ body.light-mode .note-card:hover {
   box-shadow: 0 0 15px var(--primary-glow);
 }
 
+/* Pin & History Styles */
+.note-card.is-pinned {
+  border-color: var(--warning);
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+}
+
+.note-pin-indicator {
+  color: var(--warning);
+  font-size: 0.9rem;
+  font-weight: 800;
+  margin-left: auto;
+}
+
+.history-list {
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.5rem;
+}
+
+.history-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.history-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.history-version-badge {
+  background: var(--primary);
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 100px;
+  font-weight: 700;
+}
+
+.history-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.history-item h4 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.history-item p {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+}
+
+body.light-mode .history-item {
+  background: #f8fafc;
+}
+
+
