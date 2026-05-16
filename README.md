@@ -1,203 +1,108 @@
-# FI Notes
+# FI Notes — Your Thoughts, Reimagined
 
-Production-ready REST API for a multi-user FI Notes application built with FastAPI, SQLAlchemy, and SQLite.
+FI Notes is a secure, enterprise-grade note-taking platform built with **FastAPI** and **Modern Glassmorphism UI**. It features multi-user support, bilingual phonetic transliteration, and robust note management tools.
 
-## Tech Stack
+![Project Status](https://img.shields.io/badge/Status-Production--Ready-success)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?logo=fastapi&logoColor=white)
+![Aesthetic](https://img.shields.io/badge/UI-Premium--Glassmorphism-6366f1)
 
-- Python 3.11+
-- FastAPI
-- SQLAlchemy ORM
-- SQLite
-- Pydantic
-- JWT authentication (python-jose)
-- Password hashing (passlib + bcrypt)
-- Uvicorn
-- Dark/Light mode support (System preference + Toggle)
-- Bilingual (English/Hindi) note support with real-time transliteration
+---
 
-## Project Structure
+## ✨ Key Features
 
-```
-app/
- ├── main.py
- ├── database.py
- ├── models/
- ├── schemas/
- ├── routes/
- ├── services/
- ├── core/
- ├── dependencies/
- └── utils/
-```
+- 🔐 **Dual Authentication**: Secure login via **Google OAuth 2.0** or traditional Email/Password with **SMTP OTP Verification**.
+- 🇮🇳 **Bilingual Support**: Real-time phonetic Hindi transliteration (type in English, see Hindi).
+- 📌 **Note Management**: Pin important notes to the top and stay organized.
+- 🕒 **Version History**: Automatic archiving of previous note states whenever you update.
+- 🤝 **Secure Sharing**: Share notes with other registered users in one click.
+- 🌓 **Adaptive UI**: High-fidelity dark and light mode with system-preference detection.
+- 🛡️ **Security First**: JWT-based session management with access and refresh tokens.
 
-## Setup
+---
 
-### 1. Create a virtual environment
+## 🛠️ Tech Stack
 
+- **Backend**: Python 3.11+, FastAPI, SQLAlchemy, SQLite
+- **Frontend**: Vanilla HTML5, CSS3 (Glassmorphism), JavaScript (ES6+)
+- **Security**: JWT, Passlib (Bcrypt), Google OAuth 2.0
+- **Communications**: SMTP for Multi-Factor Authentication (MFA)
+
+---
+
+## 🚀 Getting Started
+
+### 1. Prerequisites
+- Python 3.11 or higher
+- A Google Cloud Project (for OAuth, optional)
+- An SMTP account (Gmail App Password recommended)
+
+### 2. Installation
 ```bash
+# Clone the repository
+git clone https://github.com/shivamchauhaan054/FI_Notes.git
+cd FI_Notes
+
+# Create a virtual environment
 python -m venv venv
-```
+source venv/bin/activate  # On Windows: .\venv\Scripts\Activate.ps1
 
-**Windows (PowerShell):**
-
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
-**macOS/Linux:**
-
-```bash
-source venv/bin/activate
-```
-
-### 2. Install dependencies
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 3. Configure environment variables
-
-Copy the example environment file and update values as needed:
-
-```bash
-copy .env.example .env
-```
-
-On macOS/Linux:
-
-```bash
-cp .env.example .env
-```
-
-### 4. Run the application
-
-```bash
-uvicorn app.main:app --reload
-```
-
-The API will be available at `http://127.0.0.1:8000`.
-
-**Web app (UI):** http://127.0.0.1:8000/  
-Interactive docs: `http://127.0.0.1:8000/docs`  
-OpenAPI schema: `http://127.0.0.1:8000/openapi.json`
-
-### Port already in use (WinError 10013)
-
-If you see `[WinError 10013]`, port `8000` is likely already taken by another process. Either stop it:
-
-```powershell
-netstat -ano | findstr ":8000"
-taskkill /PID <PID_FROM_ABOVE> /F
-```
-
-Or run on a different port:
-
-```powershell
-uvicorn app.main:app --reload --port 8001
-```
-
-## Authentication setup (required for full flow)
-
-### Email OTP (SMTP)
-
-Use Gmail with an [App Password](https://myaccount.google.com/apppasswords), or any SMTP provider:
-
+### 3. Environment Configuration
+Create a `.env` file in the root directory:
 ```env
+# Core Security
+SECRET_KEY=your_super_secret_key_here
+ALGORITHM=HS256
+
+# SMTP Configuration (for OTP)
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your.email@gmail.com
-SMTP_PASSWORD=your-app-password
+SMTP_PASSWORD=your_app_password
 SMTP_FROM=your.email@gmail.com
-SMTP_USE_TLS=true
-```
 
-If SMTP is not configured, OTP codes are printed in the server console. For local testing without email, set `DEV_SHOW_OTP=true` in `.env` to return the code in the register API response.
-
-### Google sign-in
-
-1. Open [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
-2. Create an **OAuth 2.0 Client ID** (Web application)
-3. Add authorized redirect URI: `http://127.0.0.1:8000/auth/google/callback`
-4. Add to `.env`:
-
-```env
-GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your-client-secret
+# Google OAuth (Optional but recommended)
+GOOGLE_CLIENT_ID=your_id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your_secret
 GOOGLE_REDIRECT_URI=http://127.0.0.1:8000/auth/google/callback
+
+# URLs
 FRONTEND_URL=http://127.0.0.1:8000
 ```
 
-### Auth flow
-
-1. **Email register** → 6-digit OTP emailed → verify → JWT issued  
-2. **Email login** → if unverified, new OTP sent → verify screen  
-3. **Google** → one-click sign-in (email pre-verified by Google)
-
-**Upgrading an old database:** delete `notes.db` and restart, or the app will auto-migrate columns on startup.
-
-## API Endpoints
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/register` | No | Register; sends email OTP |
-| POST | `/verify-otp` | No | Verify OTP; returns JWT |
-| POST | `/resend-otp` | No | Resend verification code |
-| POST | `/login` | No | Login (email must be verified) |
-| GET | `/auth/google` | No | Start Google OAuth |
-| GET | `/auth/status` | No | Check OAuth/SMTP config |
-| GET | `/notes` | Bearer | List own notes |
-| GET | `/notes/{id}` | Bearer | Get note (owner or shared) |
-| POST | `/notes` | Bearer | Create a note |
-| PUT | `/notes/{id}` | Bearer | Update note (owner only) |
-| DELETE | `/notes/{id}` | Bearer | Delete note (owner only) |
-| POST | `/notes/{id}/share` | Bearer | Share note with another user |
-| GET | `/about` | No | API author information |
-
-## Authentication
-
-Protected routes require a Bearer token in the `Authorization` header:
-
-```
-Authorization: Bearer <access_token>
-```
-
-Obtain a token by calling `POST /login` with valid credentials.
-
-## Example Usage
-
-### Register
-
+### 4. Running Locally
 ```bash
-curl -X POST http://127.0.0.1:8000/register \
-  -H "Content-Type: application/json" \
-  -d "{\"email\": \"user@example.com\", \"password\": \"password123\"}"
+uvicorn app.main:app --reload
 ```
-
-### Login
-
-```bash
-curl -X POST http://127.0.0.1:8000/login \
-  -H "Content-Type: application/json" \
-  -d "{\"email\": \"user@example.com\", \"password\": \"password123\"}"
-```
-
-### Create a note
-
-```bash
-curl -X POST http://127.0.0.1:8000/notes \
-  -H "Content-Type: application/json" \
-  -d "{\"title\": \"My Note\", \"content\": \"Note content here\"}"
-```
-
-## 🚀 Deploying to Render
-
-1.  **Create a New Web Service** on Render and connect your GitHub repo.
-2.  **Environment**: Select `Python`.
-3.  **Build Command**: `pip install -r requirements.txt`
-4.  **Start Command**: `gunicorn -k uvicorn.workers.UvicornWorker app.main:app`
-5.  **Environment Variables**: Add all variables from your `.env` file in the Render Dashboard (especially `SECRET_KEY`, `GOOGLE_CLIENT_ID`, `SMTP_PASSWORD`, and `FRONTEND_URL`).
-6.  **Persistent Disk (Optional)**: Since this app uses SQLite, data is transient. For production use, [attach a Persistent Disk](https://render.com/docs/disks) or connect a PostgreSQL database.
+Access the application at `http://127.0.0.1:8000`
 
 ---
-Built with ❤️ for **FI Notes** — *Your notes, reimagined.*
+
+## 📖 API Documentation
+
+The project includes built-in interactive documentation:
+- **Swagger UI**: `http://127.0.0.1:8000/docs`
+- **ReDoc**: `http://127.0.0.1:8000/redoc`
+
+---
+
+## 🚢 Production Deployment
+
+For production environments, use **Gunicorn** with the Uvicorn worker:
+
+```bash
+gunicorn -k uvicorn.workers.UvicornWorker app.main:app
+```
+
+*Note: If deploying with SQLite, ensure you use a persistent disk for the `notes.db` file to prevent data loss on restarts.*
+
+---
+
+## 👨‍💻 Author
+**Shivam Chauhan**  
+[GitHub](https://github.com/shivamchauhaan054) | [Email](mailto:22bme054@iiitdmj.ac.in)
+
+Built with ❤️ for better note-taking.
