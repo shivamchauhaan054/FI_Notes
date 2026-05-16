@@ -321,6 +321,14 @@ async function loadAuthStatus(retries = 3) {
     }
 
     googleOAuthEnabled = !!status.google_oauth_enabled;
+    if (googleOAuthEnabled) {
+      const alertEl = $("#auth-alert");
+      if (alertEl) {
+        alertEl.classList.add("hidden");
+        alertEl.textContent = "";
+      }
+    }
+
     if (googleBtn) {
       if (googleOAuthEnabled) {
         googleBtn.classList.remove("btn-disabled");
