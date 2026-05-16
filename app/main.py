@@ -13,9 +13,17 @@ init_db()
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 app = FastAPI(
-    title="FI Notes",
-    version="1.0.0",
-    description="REST API with JWT Bearer authentication (access + refresh tokens).",
+    title="FI Notes — Enterprise Grade REST API",
+    version="1.5.0",
+    description="""
+A secure, multi-user note-taking platform featuring:
+- **JWT Authentication** (Access & Refresh tokens)
+- **Google OAuth 2.0** Integration
+- **Bilingual Support** (Phonetic Hindi Transliteration)
+- **Note Version History** (Automatic archiving)
+- **Pinning & Search** (Optimized for performance)
+- **SMTP OTP Verification** (MFA security)
+    """,
 )
 
 app.add_middleware(SessionMiddleware, secret_key=settings.secret_key)

@@ -82,11 +82,14 @@ def list_notes(
 @router.get("/search", response_model=list[NoteResponse])
 def search_notes(
     q: str,
+    skip: int = 0,
+    limit: int = 50,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
-    Search notes by title or content.
+    Search notes by title or content with pagination.
+    Pinned notes are prioritized in results.
     """
     if not q.strip():
         return []
@@ -107,7 +110,9 @@ def search_notes(
             (Note.title.ilike(search_query)) | 
             (Note.content.ilike(search_query))
         )
-        .order_by(Note.updated_at.desc())
+        .order_by(Note.is_pinned.desc(), Note.updated_at.desc())
+        .offset(skip)
+        .limit(limit)
         .all()
     )
     return notes

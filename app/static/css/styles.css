@@ -179,26 +179,25 @@ a:hover {
   padding: 4rem 2rem;
 }
 
-.hero-wrapper {
-  display: grid;
-  grid-template-columns: 1fr 440px;
-  gap: 4rem;
-  align-items: center;
-  margin-bottom: 6rem;
-}
-
 .hidden {
   display: none !important;
 }
 
-/* Hero Section */
-.hero {
-  text-align: left;
+.hero-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4rem;
   animation: fadeInDown 0.8s ease-out;
 }
 
-.hero h1 {
-  font-size: clamp(2.5rem, 5vw, 4rem);
+.hero-content {
+  max-width: 800px;
+}
+
+.hero-content h1 {
+  font-size: clamp(3rem, 6vw, 4.5rem);
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.04em;
@@ -208,19 +207,18 @@ a:hover {
   -webkit-text-fill-color: transparent;
 }
 
-.hero p {
+.hero-content p {
   color: var(--text-muted);
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   line-height: 1.6;
-  margin-bottom: 0;
 }
 
 /* Features Grid */
-.features {
+.features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 6rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  width: 100%;
 }
 
 .feature-card {
@@ -228,11 +226,12 @@ a:hover {
   backdrop-filter: blur(10px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
-  padding: 1.5rem;
+  padding: 2rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
+  text-align: left;
 }
 
 .feature-card:hover {
@@ -242,8 +241,12 @@ a:hover {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
+.feature-icon {
+  font-size: 2rem;
+}
+
 .feature-card h3 {
-  font-size: 1.25rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: var(--text);
 }
@@ -251,11 +254,13 @@ a:hover {
 .feature-card p {
   color: var(--text-muted);
   font-size: 1rem;
+  line-height: 1.5;
 }
 
-/* Auth Section */
-.auth-section {
+/* Auth Wrapper */
+.auth-section-wrapper {
   width: 100%;
+  max-width: 460px;
   animation: fadeInUp 0.8s ease-out;
 }
 
