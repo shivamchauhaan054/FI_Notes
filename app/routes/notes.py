@@ -5,11 +5,18 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies.auth import get_current_user
-from app.models.note import Note
+from app.models.note import Note, NoteVersion
 from app.models.shared_note import SharedNote
 from app.models.user import User
 from app.schemas.auth import MessageResponse
-from app.schemas.note import NoteCreate, NoteResponse, NoteUpdate, ShareNoteRequest
+from app.schemas.note import (
+    NoteCreate,
+    NoteResponse,
+    NoteUpdate,
+    NoteVersionResponse,
+    PinResponse,
+    ShareNoteRequest,
+)
 
 router = APIRouter(prefix="/notes", tags=["notes"])
 
@@ -63,7 +70,7 @@ def list_notes(
     notes = (
         db.query(Note)
         .filter(Note.id.in_(all_accessible_ids))
-        .order_by(Note.updated_at.desc())
+        .order_by(Note.is_pinned.desc(), Note.updated_at.desc())
         .offset(skip)
         .limit(limit)
         .all()
@@ -162,12 +169,73 @@ def update_note(
             detail="Not authorized to update this note",
         )
 
+    # Save current state as a version before updating
+    version_number = db.query(NoteVersion).filter(NoteVersion.note_id == note.id).count() + 1
+    history_version = NoteVersion(
+        note_id=note.id,
+        version_number=version_number,
+        title=note.title,
+        content=note.content,
+        created_at=note.updated_at,
+    )
+    db.add(history_version)
+
     note.title = payload.title.strip()
     note.content = payload.content.strip()
     note.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(note)
     return note
+
+
+@router.patch("/{note_id}/pin", response_model=PinResponse)
+def toggle_pin_note(
+    note_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Toggle the pinned status of a note. Only the owner can pin/unpin.
+    """
+    note = _get_note_or_404(note_id, db)
+    if not _is_owner(note, current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to pin this note",
+        )
+
+    note.is_pinned = not note.is_pinned
+    db.commit()
+    db.refresh(note)
+    return PinResponse(
+        message="Note pin status updated",
+        is_pinned=note.is_pinned,
+    )
+
+
+@router.get("/{note_id}/history", response_model=list[NoteVersionResponse])
+def get_note_history(
+    note_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Retrieve the version history for a specific note. Only the owner can access.
+    """
+    note = _get_note_or_404(note_id, db)
+    if not _is_owner(note, current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access history for this note",
+        )
+
+    versions = (
+        db.query(NoteVersion)
+        .filter(NoteVersion.note_id == note.id)
+        .order_by(NoteVersion.version_number.desc())
+        .all()
+    )
+    return versions
 
 
 @router.delete("/{note_id}", status_code=status.HTTP_204_NO_CONTENT)

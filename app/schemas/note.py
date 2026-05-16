@@ -31,10 +31,25 @@ class NoteResponse(BaseModel):
     id: int
     title: str
     content: str
+    is_pinned: bool
     created_at: datetime
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class NoteVersionResponse(BaseModel):
+    version_number: int
+    title: str
+    content: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class PinResponse(BaseModel):
+    message: str
+    is_pinned: bool
 
 
 class ShareNoteRequest(BaseModel):
