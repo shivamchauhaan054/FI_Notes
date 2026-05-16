@@ -168,8 +168,8 @@
           <input id="note-title" required placeholder="A catchy title..." />
         </div>
         <div class="form-group">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-            <label for="note-content">Content</label>
+          <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+            <label for="note-content" style="margin-bottom: 0;">Content</label>
             <label class="toggle-switch">
               <input type="checkbox" id="hindi-toggle">
               <span class="toggle-slider"></span>
@@ -177,7 +177,7 @@
             </label>
           </div>
           <textarea id="note-content" required placeholder="Start typing..."></textarea>
-          <small id="hindi-hint" class="hidden" style="color: var(--primary); font-size: 0.8rem;">Transliteration active: Type 'namaste' and press space to get 'नमस्ते'</small>
+          <small id="hindi-hint" class="hidden" style="color: var(--primary); font-size: 0.8rem; margin-top: 0.25rem; display: block;">Transliteration active: Type 'namaste' and press space</small>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-close="modal-note">Discard</button>

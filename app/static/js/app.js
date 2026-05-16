@@ -45,17 +45,21 @@ async function handleHindiInput(e) {
     const text = textarea.value;
     const cursor = textarea.selectionStart;
     
-    // Get the word just typed
-    const lastSpace = text.lastIndexOf(" ", cursor - 2);
-    const start = lastSpace === -1 ? 0 : lastSpace + 1;
-    const word = text.substring(start, cursor - 1);
+    // Find the word right before the cursor (the word we just finished typing)
+    const textBeforeCursor = text.substring(0, cursor - 1);
+    const words = textBeforeCursor.split(/[\s\n]+/);
+    const lastWord = words[words.length - 1];
     
-    if (word && /^[a-zA-Z]+$/.test(word)) {
-      const hindiWord = await transliterate(word);
-      if (hindiWord !== word) {
+    // Only transliterate if it's an English word
+    if (lastWord && /^[a-zA-Z]+$/.test(lastWord)) {
+      const hindiWord = await transliterate(lastWord);
+      if (hindiWord !== lastWord) {
+        const start = cursor - 1 - lastWord.length;
         const newValue = text.substring(0, start) + hindiWord + text.substring(cursor - 1);
         textarea.value = newValue;
-        textarea.selectionStart = textarea.selectionEnd = start + hindiWord.length + 1;
+        // Move cursor back to after the inserted hindi word + the space/enter
+        const newCursorPos = start + hindiWord.length + 1;
+        textarea.selectionStart = textarea.selectionEnd = newCursorPos;
       }
     }
   }
@@ -584,8 +588,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const hindiHint = $("#hindi-hint");
 
   if (hindiToggle) {
-    if (noteContent) noteContent.addEventListener("keydown", handleHindiInput);
-    if (noteTitle) noteTitle.addEventListener("keydown", handleHindiInput);
+    if (noteContent) noteContent.addEventListener("keyup", handleHindiInput);
+    if (noteTitle) noteTitle.addEventListener("keyup", handleHindiInput);
     
     hindiToggle.addEventListener("change", () => {
       hindiHint?.classList.toggle("hidden", !hindiToggle.checked);
