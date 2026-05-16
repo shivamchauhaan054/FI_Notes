@@ -327,13 +327,13 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-async function loadNotes() {
+async function loadNotes(skip = 0, limit = 50) {
   const alertEl = $("#notes-alert");
-  hideAlert(alertEl);
+  if (skip === 0) hideAlert(alertEl);
 
   try {
-    const notes = await api("/notes");
-    renderNotes(notes);
+    const notes = await api(`/notes?skip=${skip}&limit=${limit}`);
+    renderNotes(notes, skip > 0);
   } catch (err) {
     if (err.status === 401) {
       clearSession();
@@ -344,11 +344,26 @@ async function loadNotes() {
   }
 }
 
-function renderNotes(notes) {
+async function searchNotes(query) {
+  const alertEl = $("#notes-alert");
+  hideAlert(alertEl);
+  if (!query.trim()) {
+    loadNotes();
+    return;
+  }
+  try {
+    const notes = await api(`/search?q=${encodeURIComponent(query)}`);
+    renderNotes(notes);
+  } catch (err) {
+    showAlert(alertEl, err.message);
+  }
+}
+
+function renderNotes(notes, append = false) {
   const grid = $("#notes-grid");
   const empty = $("#notes-empty");
 
-  if (!notes.length) {
+  if (!notes.length && !append) {
     grid.classList.add("hidden");
     grid.innerHTML = "";
     empty.classList.remove("hidden");
@@ -357,7 +372,8 @@ function renderNotes(notes) {
 
   empty.classList.add("hidden");
   grid.classList.remove("hidden");
-  grid.innerHTML = notes
+  
+  const html = notes
     .map(
       (note) => `
     <article class="note-card" data-id="${note.id}">
@@ -373,6 +389,12 @@ function renderNotes(notes) {
   `
     )
     .join("");
+
+  if (append) {
+    grid.innerHTML += html;
+  } else {
+    grid.innerHTML = html;
+  }
 
   grid.querySelectorAll(".btn-edit").forEach((btn) => {
     btn.addEventListener("click", () => openEditNote(Number(btn.dataset.id)));
@@ -607,11 +629,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const noteContent = $("#note-content");
   const noteTitle = $("#note-title");
   const hindiToggleBtn = $("#hindi-toggle-btn");
+  const searchInput = $("#search-input");
 
   if (hindiToggleBtn) {
     if (noteContent) noteContent.addEventListener("keyup", handleHindiInput);
     if (noteTitle) noteTitle.addEventListener("keyup", handleHindiInput);
     hindiToggleBtn.addEventListener("click", toggleHindi);
+  }
+
+  if (searchInput) {
+    let debounceTimer;
+    searchInput.addEventListener("input", (e) => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => searchNotes(e.target.value), 300);
+    });
   }
 
   handleOAuthCallback();

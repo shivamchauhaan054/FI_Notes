@@ -46,28 +46,64 @@ def _can_read(note: Note, user: User, db: Session) -> bool:
 
 @router.get("", response_model=list[NoteResponse])
 def list_notes(
+    skip: int = 0,
+    limit: int = 50,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
-    Retrieve all notes owned by or shared with the authenticated user.
+    Retrieve notes owned by or shared with the authenticated user with pagination.
     """
-    # Notes owned by the user
-    owned_notes = db.query(Note).filter(Note.owner_id == current_user.id).all()
+    # Get all accessible note IDs first to handle pagination correctly across owned and shared
+    owned_note_ids = [r[0] for r in db.query(Note.id).filter(Note.owner_id == current_user.id).all()]
+    shared_note_ids = [r[0] for r in db.query(SharedNote.note_id).filter(SharedNote.shared_with_user_id == current_user.id).all()]
     
-    # Notes shared with the user
-    shared_note_ids = (
-        db.query(SharedNote.note_id)
-        .filter(SharedNote.shared_with_user_id == current_user.id)
+    all_accessible_ids = list(set(owned_note_ids + shared_note_ids))
+    
+    notes = (
+        db.query(Note)
+        .filter(Note.id.in_(all_accessible_ids))
+        .order_by(Note.updated_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    ) if all_accessible_ids else []
+    
+    return notes
+
+
+@router.get("/search", response_model=list[NoteResponse])
+def search_notes(
+    q: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Search notes by title or content.
+    """
+    if not q.strip():
+        return []
+
+    # Get all accessible note IDs
+    owned_note_ids = [r[0] for r in db.query(Note.id).filter(Note.owner_id == current_user.id).all()]
+    shared_note_ids = [r[0] for r in db.query(SharedNote.note_id).filter(SharedNote.shared_with_user_id == current_user.id).all()]
+    all_accessible_ids = list(set(owned_note_ids + shared_note_ids))
+
+    if not all_accessible_ids:
+        return []
+
+    search_query = f"%{q.strip()}%"
+    notes = (
+        db.query(Note)
+        .filter(Note.id.in_(all_accessible_ids))
+        .filter(
+            (Note.title.ilike(search_query)) | 
+            (Note.content.ilike(search_query))
+        )
+        .order_by(Note.updated_at.desc())
         .all()
     )
-    shared_note_ids = [r[0] for r in shared_note_ids]
-    shared_notes = db.query(Note).filter(Note.id.in_(shared_note_ids)).all() if shared_note_ids else []
-    
-    # Combine and sort by updated_at
-    all_notes = owned_notes + shared_notes
-    all_notes.sort(key=lambda x: x.updated_at, reverse=True)
-    return all_notes
+    return notes
 
 
 @router.get("/{note_id}", response_model=NoteResponse)

@@ -26,3 +26,7 @@ app.include_router(web.router)
 app.include_router(auth.router)
 app.include_router(notes.router)
 app.include_router(about.router)
+
+@app.get("/search", tags=["search"])
+def search_redirect(q: str, notes_router=Depends(notes.search_notes)):
+    return notes_router
