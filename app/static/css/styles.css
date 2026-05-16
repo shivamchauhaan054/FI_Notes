@@ -417,7 +417,7 @@ a:hover {
 
 .notes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 2rem;
 }
 
@@ -434,10 +434,18 @@ a:hover {
 
 .note-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-top: auto;
   padding-top: 1rem;
   border-top: 1px solid var(--border);
+}
+
+.note-actions .btn {
+  flex: 1 1 auto;
+  min-width: fit-content;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
 }
 
 /* Animations */
