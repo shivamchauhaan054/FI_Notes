@@ -16,11 +16,17 @@
       <div class="logo-icon">📝</div>
       <span>FI Notes</span>
     </a>
-    <nav class="nav-links">
-      <a href="/docs" target="_blank" rel="noopener">Documentation</a>
-      <span id="user-badge" class="user-badge hidden"></span>
-      <button id="btn-logout" class="btn btn-secondary btn-sm hidden" type="button">Log out</button>
-    </nav>
+    <div class="header-right" style="display: flex; align-items: center; gap: 1.5rem;">
+      <button id="theme-toggle" class="theme-toggle" title="Toggle theme" type="button">
+        <span class="sun-icon">☀️</span>
+        <span class="moon-icon">🌙</span>
+      </button>
+      <nav class="nav-links">
+        <a href="/docs" target="_blank" rel="noopener">Docs</a>
+        <span id="user-badge" class="user-badge hidden"></span>
+        <button id="btn-logout" class="btn btn-secondary btn-sm hidden" type="button">Log out</button>
+      </nav>
+    </div>
   </header>
 
   <main>

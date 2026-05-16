@@ -1,10 +1,25 @@
 const TOKEN_KEY = "fi_notes_access_token";
 const REFRESH_KEY = "fi_notes_refresh_token";
 const EMAIL_KEY = "fi_notes_user_email";
+const THEME_KEY = "fi_notes_theme";
 let googleOAuthEnabled = false;
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
+
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  if (saved === "light") {
+    document.body.classList.add("light-mode");
+  } else if (!saved && window.matchMedia("(prefers-color-scheme: light)").matches) {
+    document.body.classList.add("light-mode");
+  }
+}
+
+function toggleTheme() {
+  const isLight = document.body.classList.toggle("light-mode");
+  localStorage.setItem(THEME_KEY, isLight ? "light" : "dark");
+}
 
 function getToken() {
   return localStorage.getItem(TOKEN_KEY);
@@ -515,6 +530,8 @@ $$(".modal-overlay").forEach((overlay) => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
+  initTheme();
+  $("#theme-toggle")?.addEventListener("click", toggleTheme);
   handleOAuthCallback();
   if (getToken() && !new URLSearchParams(window.location.search).has("token")) {
     showAppView();

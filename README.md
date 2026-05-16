@@ -12,6 +12,7 @@ Production-ready REST API for a multi-user FI Notes application built with FastA
 - JWT authentication (python-jose)
 - Password hashing (passlib + bcrypt)
 - Uvicorn
+- Dark/Light mode support (System preference + Toggle)
 
 ## Project Structure
 
