@@ -2,6 +2,7 @@ import logging
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.utils import formataddr
 
 from app.core.config import settings
 
@@ -48,18 +49,27 @@ def send_otp_email(to_email: str, otp: str, purpose: str = "verify your account"
 
     message = MIMEMultipart("alternative")
     message["Subject"] = subject
-    message["From"] = settings.smtp_from
+    message["From"] = formataddr(("FI Notes", settings.smtp_from))
     message["To"] = to_email
     message.attach(MIMEText(text, "plain"))
     message.attach(MIMEText(html, "html"))
 
     try:
+        logger.info("Connecting to SMTP server %s:%s...", settings.smtp_host, settings.smtp_port)
         with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=30) as server:
             if settings.smtp_use_tls:
                 server.starttls()
+            
+            logger.info("Logging in to SMTP as %s...", settings.smtp_user)
             server.login(settings.smtp_user, settings.smtp_password)
+            
+            logger.info("Sending email to %s...", to_email)
             server.sendmail(settings.smtp_from, [to_email], message.as_string())
-        logger.info("OTP email sent to %s", to_email)
-    except smtplib.SMTPException as exc:
-        logger.error("Failed to send OTP email to %s: %s", to_email, exc)
+            
+        logger.info("OTP email successfully sent to %s", to_email)
+    except smtplib.SMTPResponseException as exc:
+        logger.error("SMTP Error %s: %s", exc.smtp_code, exc.smtp_error.decode() if hasattr(exc.smtp_error, 'decode') else exc.smtp_error)
+        raise
+    except Exception as exc:
+        logger.error("Unexpected error sending OTP email to %s: %s", to_email, exc)
         raise
