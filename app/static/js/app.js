@@ -305,7 +305,7 @@ function showOtpCode(otp) {
   display.classList.remove("hidden");
 }
 
-async function loadAuthStatus() {
+async function loadAuthStatus(retries = 3) {
   try {
     const status = await api("/auth/status");
     const hintsEl = $("#auth-setup-hints");
@@ -320,16 +320,21 @@ async function loadAuthStatus() {
       }
     }
 
-    googleOAuthEnabled = status.google_oauth_enabled;
+    googleOAuthEnabled = !!status.google_oauth_enabled;
     if (googleBtn) {
       if (googleOAuthEnabled) {
         googleBtn.classList.remove("btn-disabled");
+        googleBtn.style.opacity = "1";
       } else {
         googleBtn.classList.add("btn-disabled");
+        googleBtn.style.opacity = "0.5";
       }
     }
   } catch (err) {
     console.error("Failed to load auth status:", err);
+    if (retries > 0) {
+      setTimeout(() => loadAuthStatus(retries - 1), 2000);
+    }
   }
 }
 
