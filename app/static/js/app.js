@@ -17,6 +17,12 @@ function initTheme() {
   });
   $("#btn-header-login")?.addEventListener("click", showAuthView);
 
+  document.querySelectorAll(".btn-learn-more").forEach(btn => {
+    btn.addEventListener("click", () => {
+      $("#features-section")?.scrollIntoView({ behavior: "smooth" });
+    });
+  });
+
   const saved = localStorage.getItem(THEME_KEY);
   if (saved === "light") {
     document.body.classList.add("light-mode");
