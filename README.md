@@ -13,6 +13,7 @@ Production-ready REST API for a multi-user FI Notes application built with FastA
 - Password hashing (passlib + bcrypt)
 - Uvicorn
 - Dark/Light mode support (System preference + Toggle)
+- Bilingual (English/Hindi) note support with real-time transliteration
 
 ## Project Structure
 

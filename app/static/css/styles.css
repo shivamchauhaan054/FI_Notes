@@ -619,3 +619,45 @@ body.light-mode .note-card:hover {
   border-color: var(--primary);
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
+/* Toggle Switch */
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.toggle-switch input {
+  display: none;
+}
+.toggle-slider {
+  width: 34px;
+  height: 18px;
+  background: var(--border);
+  border-radius: 20px;
+  position: relative;
+  transition: 0.3s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: 0.3s;
+}
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--primary);
+}
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(16px);
+}
+.toggle-label {
+  user-select: none;
+}
+

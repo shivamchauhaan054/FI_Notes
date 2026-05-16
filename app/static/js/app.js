@@ -23,6 +23,44 @@ function toggleTheme() {
   console.log("New theme is:", isLight ? "light" : "dark");
 }
 
+async function transliterate(text) {
+  if (!text.trim()) return text;
+  try {
+    const res = await fetch(`https://inputtools.google.com/request?text=${encodeURIComponent(text)}&itc=hi-t-i0-und&num=1&cp=0&cs=1&ie=utf-8&oe=utf-8&app=test`);
+    const data = await res.json();
+    if (data[0] === "SUCCESS") {
+      return data[1][0][1][0] || text;
+    }
+  } catch (err) {
+    console.error("Transliteration failed:", err);
+  }
+  return text;
+}
+
+async function handleHindiInput(e) {
+  if (!$("#hindi-toggle")?.checked) return;
+  
+  if (e.key === " " || e.key === "Enter") {
+    const textarea = e.target;
+    const text = textarea.value;
+    const cursor = textarea.selectionStart;
+    
+    // Get the word just typed
+    const lastSpace = text.lastIndexOf(" ", cursor - 2);
+    const start = lastSpace === -1 ? 0 : lastSpace + 1;
+    const word = text.substring(start, cursor - 1);
+    
+    if (word && /^[a-zA-Z]+$/.test(word)) {
+      const hindiWord = await transliterate(word);
+      if (hindiWord !== word) {
+        const newValue = text.substring(0, start) + hindiWord + text.substring(cursor - 1);
+        textarea.value = newValue;
+        textarea.selectionStart = textarea.selectionEnd = start + hindiWord.length + 1;
+      }
+    }
+  }
+}
+
 function getToken() {
   return localStorage.getItem(TOKEN_KEY);
 }
@@ -334,6 +372,8 @@ function openNewNote() {
   $("#note-id").value = "";
   $("#note-title").value = "";
   $("#note-content").value = "";
+  if ($("#hindi-toggle")) $("#hindi-toggle").checked = false;
+  $("#hindi-hint")?.classList.add("hidden");
   hideAlert($("#modal-note-alert"));
   openModal("modal-note");
 }
@@ -346,6 +386,8 @@ async function openEditNote(id) {
     $("#note-id").value = note.id;
     $("#note-title").value = note.title;
     $("#note-content").value = note.content;
+    if ($("#hindi-toggle")) $("#hindi-toggle").checked = false;
+    $("#hindi-hint")?.classList.add("hidden");
     openModal("modal-note");
   } catch (err) {
     showAlert($("#notes-alert"), err.message);
@@ -535,6 +577,21 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     console.warn("Theme toggle button not found in DOM");
   }
+
+  const noteContent = $("#note-content");
+  const noteTitle = $("#note-title");
+  const hindiToggle = $("#hindi-toggle");
+  const hindiHint = $("#hindi-hint");
+
+  if (hindiToggle) {
+    if (noteContent) noteContent.addEventListener("keydown", handleHindiInput);
+    if (noteTitle) noteTitle.addEventListener("keydown", handleHindiInput);
+    
+    hindiToggle.addEventListener("change", () => {
+      hindiHint?.classList.toggle("hidden", !hindiToggle.checked);
+    });
+  }
+
   handleOAuthCallback();
   if (getToken() && !new URLSearchParams(window.location.search).has("token")) {
     showAppView();
