@@ -97,6 +97,7 @@ function clearSession() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(REFRESH_KEY);
   localStorage.removeItem(EMAIL_KEY);
+  localStorage.removeItem("fi_notes_user_id");
 }
 
 function getRefreshToken() {
@@ -197,15 +198,20 @@ function showGuestView() {
   showAuthForms();
 }
 
-function showAppView() {
+async function showAppView() {
   $("#view-guest")?.classList.add("hidden");
   $("#view-app")?.classList.remove("hidden");
-  const email = localStorage.getItem(EMAIL_KEY) || "Signed in";
-  const badge = $("#user-badge");
-  if (badge) {
-    badge.textContent = email;
-    badge.classList.remove("hidden");
+  
+  try {
+    const user = await api("/auth/me");
+    localStorage.setItem("fi_notes_user_id", user.id);
+    $("#user-badge").textContent = user.email;
+  } catch {
+    const email = localStorage.getItem(EMAIL_KEY) || "Signed in";
+    $("#user-badge").textContent = email;
   }
+  
+  $("#user-badge")?.classList.remove("hidden");
   $("#btn-logout")?.classList.remove("hidden");
 }
 
@@ -371,6 +377,7 @@ async function searchNotes(query) {
 function renderNotes(notes, append = false) {
   const grid = $("#notes-grid");
   const empty = $("#notes-empty");
+  const currentUserId = Number(localStorage.getItem("fi_notes_user_id"));
 
   if (!notes.length && !append) {
     grid.classList.add("hidden");
@@ -384,23 +391,30 @@ function renderNotes(notes, append = false) {
   
   const html = notes
     .map(
-      (note) => `
+      (note) => {
+        const isOwner = note.owner_id === currentUserId;
+        return `
     <article class="note-card ${note.is_pinned ? "is-pinned" : ""}" data-id="${note.id}">
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <h3>${escapeHtml(note.title)}</h3>
         ${note.is_pinned ? '<span class="note-pin-indicator" title="Pinned">📌</span>' : ""}
       </div>
       <p class="content-preview">${escapeHtml(note.content)}</p>
-      <p class="note-meta">Updated ${formatDate(note.updated_at)}</p>
+      <p class="note-meta">Updated ${formatDate(note.updated_at)} ${!isOwner ? '<span style="color:var(--primary); font-size: 0.7rem; margin-left: 0.5rem;">(Shared)</span>' : ""}</p>
       <div class="note-actions">
-        <button type="button" class="btn btn-secondary btn-sm btn-pin" data-id="${note.id}">${note.is_pinned ? "Unpin" : "Pin"}</button>
-        <button type="button" class="btn btn-secondary btn-sm btn-edit" data-id="${note.id}">Edit</button>
-        <button type="button" class="btn btn-secondary btn-sm btn-history" data-id="${note.id}">History</button>
-        <button type="button" class="btn btn-secondary btn-sm btn-share" data-id="${note.id}">Share</button>
-        <button type="button" class="btn btn-danger btn-sm btn-delete" data-id="${note.id}">Delete</button>
+        ${isOwner ? `
+          <button type="button" class="btn btn-secondary btn-sm btn-pin" data-id="${note.id}">${note.is_pinned ? "Unpin" : "Pin"}</button>
+          <button type="button" class="btn btn-secondary btn-sm btn-edit" data-id="${note.id}">Edit</button>
+          <button type="button" class="btn btn-secondary btn-sm btn-history" data-id="${note.id}">History</button>
+          <button type="button" class="btn btn-secondary btn-sm btn-share" data-id="${note.id}">Share</button>
+          <button type="button" class="btn btn-danger btn-sm btn-delete" data-id="${note.id}">Delete</button>
+        ` : `
+          <span style="font-size: 0.8rem; color: var(--text-muted); padding: 0.5rem;">Read-only access</span>
+        `}
       </div>
     </article>
-  `
+  `;
+      }
     )
     .join("");
 

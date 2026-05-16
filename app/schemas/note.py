@@ -31,6 +31,7 @@ class NoteResponse(BaseModel):
     id: int
     title: str
     content: str
+    owner_id: int
     is_pinned: bool
     created_at: datetime
     updated_at: datetime
