@@ -187,6 +187,17 @@ curl -X POST http://127.0.0.1:8000/login \
 ```bash
 curl -X POST http://127.0.0.1:8000/notes \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
   -d "{\"title\": \"My Note\", \"content\": \"Note content here\"}"
 ```
+
+## 🚀 Deploying to Render
+
+1.  **Create a New Web Service** on Render and connect your GitHub repo.
+2.  **Environment**: Select `Python`.
+3.  **Build Command**: `pip install -r requirements.txt`
+4.  **Start Command**: `gunicorn -k uvicorn.workers.UvicornWorker app.main:app`
+5.  **Environment Variables**: Add all variables from your `.env` file in the Render Dashboard (especially `SECRET_KEY`, `GOOGLE_CLIENT_ID`, `SMTP_PASSWORD`, and `FRONTEND_URL`).
+6.  **Persistent Disk (Optional)**: Since this app uses SQLite, data is transient. For production use, [attach a Persistent Disk](https://render.com/docs/disks) or connect a PostgreSQL database.
+
+---
+Built with ❤️ for **FI Notes** — *Your notes, reimagined.*
