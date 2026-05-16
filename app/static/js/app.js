@@ -190,20 +190,23 @@ function formatDate(iso) {
 }
 
 function showGuestView() {
-  $("#view-guest").classList.remove("hidden");
-  $("#view-app").classList.add("hidden");
-  $("#user-badge").classList.add("hidden");
-  $("#btn-logout").classList.add("hidden");
+  $("#view-guest")?.classList.remove("hidden");
+  $("#view-app")?.classList.add("hidden");
+  $("#user-badge")?.classList.add("hidden");
+  $("#btn-logout")?.classList.add("hidden");
   showAuthForms();
 }
 
 function showAppView() {
-  $("#view-guest").classList.add("hidden");
-  $("#view-app").classList.remove("hidden");
+  $("#view-guest")?.classList.add("hidden");
+  $("#view-app")?.classList.remove("hidden");
   const email = localStorage.getItem(EMAIL_KEY) || "Signed in";
-  $("#user-badge").textContent = email;
-  $("#user-badge").classList.remove("hidden");
-  $("#btn-logout").classList.remove("hidden");
+  const badge = $("#user-badge");
+  if (badge) {
+    badge.textContent = email;
+    badge.classList.remove("hidden");
+  }
+  $("#btn-logout")?.classList.remove("hidden");
 }
 
 function openModal(id) {
@@ -226,37 +229,43 @@ function switchAuthTab(tab) {
 }
 
 function showVerifyStep(email, otp = null) {
-  $("#auth-tabs").classList.add("hidden");
-  $("#auth-forms").classList.add("hidden");
-  $("#btn-google").classList.add("hidden");
+  $("#auth-tabs")?.classList.add("hidden");
+  $("#auth-forms")?.classList.add("hidden");
+  $("#btn-google")?.classList.add("hidden");
   document.querySelector(".auth-divider")?.classList.add("hidden");
-  $("#google-setup-note").classList.add("hidden");
-  $("#auth-setup-hints").classList.add("hidden");
-  $("#form-verify").classList.remove("hidden");
-  $("#verify-email").value = email;
-  $("#verify-email-display").textContent = email;
-  $("#verify-otp").value = "";
+  $("#google-setup-note")?.classList.add("hidden");
+  $("#auth-setup-hints")?.classList.add("hidden");
+  $("#form-verify")?.classList.remove("hidden");
+  const emailInput = $("#verify-email");
+  const emailDisplay = $("#verify-email-display");
+  if (emailInput) emailInput.value = email;
+  if (emailDisplay) emailDisplay.textContent = email;
+  const otpInput = $("#verify-otp");
+  if (otpInput) otpInput.value = "";
   showOtpCode(otp);
   hideAlert($("#auth-alert"));
 }
 
 function showAuthForms() {
-  $("#auth-tabs").classList.remove("hidden");
-  $("#auth-forms").classList.remove("hidden");
-  $("#form-verify").classList.add("hidden");
-  $("#btn-google").classList.remove("hidden");
+  $("#auth-tabs")?.classList.remove("hidden");
+  $("#auth-forms")?.classList.remove("hidden");
+  $("#form-verify")?.classList.add("hidden");
+  $("#btn-google")?.classList.remove("hidden");
   document.querySelector(".auth-divider")?.classList.remove("hidden");
   showOtpCode(null);
   loadAuthStatus();
 }
 
 function showOtpCode(otp) {
+  const display = $("#otp-display");
+  if (!display) return;
   if (!otp) {
-    $("#otp-display").classList.add("hidden");
+    display.classList.add("hidden");
     return;
   }
-  $("#otp-code").textContent = otp;
-  $("#otp-display").classList.remove("hidden");
+  const code = $("#otp-code");
+  if (code) code.textContent = otp;
+  display.classList.remove("hidden");
 }
 
 async function loadAuthStatus() {
