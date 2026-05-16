@@ -1,5 +1,6 @@
 import logging
 
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.security import get_password_hash
@@ -20,8 +21,11 @@ def issue_otp(user: User, db: Session, purpose: str = "verify your account") -> 
         try:
             send_otp_email(user.email, otp, purpose=purpose)
         except Exception as exc:
-            logger.error("SMTP send failed, OTP logged for %s: %s", user.email, exc)
-            logger.warning("OTP for %s: %s", user.email, otp)
+            logger.error("SMTP send failed for %s: %s", user.email, exc)
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to send verification email: {str(exc)}"
+            ) from exc
     else:
         logger.warning(
             "SMTP not configured. OTP for %s: %s (set SMTP_* in .env to send real emails)",
