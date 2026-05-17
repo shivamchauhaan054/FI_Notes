@@ -19,7 +19,12 @@ def smtp_configured() -> bool:
     )
 
 
-def send_otp_email(to_email: str, otp: str, purpose: str = "verify your account") -> None:
+def send_otp_email(to_email: str, otp: str, purpose: str = "verify your account") -> bool:
+    """
+    Send an OTP email. Returns True if sent successfully, False if the
+    network is unreachable (e.g. Railway blocks outbound SMTP). Raises
+    on credential/auth errors so misconfiguration is visible in logs.
+    """
     subject = f"Your FI Notes verification code: {otp}"
     html = f"""
     <html>
@@ -46,7 +51,7 @@ def send_otp_email(to_email: str, otp: str, purpose: str = "verify your account"
             to_email,
             otp,
         )
-        return
+        return False
 
     message = MIMEMultipart("alternative")
     message["Subject"] = subject
@@ -55,33 +60,45 @@ def send_otp_email(to_email: str, otp: str, purpose: str = "verify your account"
     message.attach(MIMEText(text, "plain"))
     message.attach(MIMEText(html, "html"))
 
-    try:
-        port = settings.smtp_port
-        logger.info("Connecting to SMTP server %s:%s...", settings.smtp_host, port)
+    port = settings.smtp_port
+    logger.info("Connecting to SMTP server %s:%s...", settings.smtp_host, port)
 
-        # Use SMTP_SSL for port 465 (implicit TLS), STARTTLS for port 587
+    try:
+        # Port 465 -> implicit TLS (SMTP_SSL); port 587 -> STARTTLS
         if port == 465:
             ssl_context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(settings.smtp_host, port, timeout=30, context=ssl_context) as server:
-                logger.info("Logging in to SMTP as %s...", settings.smtp_user)
+            with smtplib.SMTP_SSL(settings.smtp_host, port, timeout=15, context=ssl_context) as server:
                 server.login(settings.smtp_user, settings.smtp_password)
-                logger.info("Sending email to %s...", to_email)
                 server.sendmail(settings.smtp_from, [to_email], message.as_string())
         else:
-            # Default: port 587 with STARTTLS
-            with smtplib.SMTP(settings.smtp_host, port, timeout=30) as server:
+            with smtplib.SMTP(settings.smtp_host, port, timeout=15) as server:
                 if settings.smtp_use_tls:
                     server.starttls()
-                logger.info("Logging in to SMTP as %s...", settings.smtp_user)
                 server.login(settings.smtp_user, settings.smtp_password)
-                logger.info("Sending email to %s...", to_email)
                 server.sendmail(settings.smtp_from, [to_email], message.as_string())
 
         logger.info("OTP email successfully sent to %s", to_email)
-    except smtplib.SMTPResponseException as exc:
-        logger.error("SMTP Error %s: %s", exc.smtp_code, exc.smtp_error.decode() if hasattr(exc.smtp_error, 'decode') else exc.smtp_error)
-        raise
-    except Exception as exc:
-        logger.error("Unexpected error sending OTP email to %s: %s", to_email, exc)
+        return True
+
+    except OSError as exc:
+        # Covers [Errno 101] Network is unreachable, [Errno 111] Connection refused, etc.
+        # These are infrastructure-level blocks (e.g. Railway firewall) - not code bugs.
+        logger.warning(
+            "SMTP network unreachable for %s (port %s blocked by host): %s "
+            "- OTP will be shown on screen.",
+            to_email, port, exc,
+        )
+        return False
+
+    except smtplib.SMTPAuthenticationError as exc:
+        # Wrong credentials - this IS a config bug, so raise it.
+        logger.error("SMTP authentication failed for user %s: %s", settings.smtp_user, exc)
         raise
 
+    except smtplib.SMTPResponseException as exc:
+        logger.error("SMTP error %s: %s", exc.smtp_code, exc.smtp_error)
+        raise
+
+    except Exception as exc:
+        logger.error("Unexpected SMTP error sending to %s: %s", to_email, exc)
+        return False

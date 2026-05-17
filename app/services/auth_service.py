@@ -1,4 +1,5 @@
 import logging
+import smtplib
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -19,16 +20,25 @@ def issue_otp(user: User, db: Session, purpose: str = "verify your account") -> 
 
     if smtp_configured():
         try:
-            send_otp_email(user.email, otp, purpose=purpose)
-        except Exception as exc:
-            logger.error("SMTP send failed for %s: %s", user.email, exc)
+            email_sent = send_otp_email(user.email, otp, purpose=purpose)
+            if not email_sent:
+                # Network blocked by host (e.g. Railway firewall) — OTP shown on screen
+                logger.warning(
+                    "SMTP blocked by host network for %s. OTP returned to client.",
+                    user.email,
+                )
+        except smtplib.SMTPAuthenticationError:
+            # Wrong credentials — surface this clearly, don't silently swallow
             raise HTTPException(
                 status_code=500,
-                detail=f"Failed to send verification email: {str(exc)}"
-            ) from exc
+                detail="Email server authentication failed. Check SMTP_USER and SMTP_PASSWORD.",
+            )
+        except Exception as exc:
+            # All other errors: log but don't crash registration
+            logger.error("SMTP send failed for %s: %s — falling back to on-screen OTP", user.email, exc)
     else:
         logger.warning(
-            "SMTP not configured. OTP for %s: %s (set SMTP_* in .env to send real emails)",
+            "SMTP not configured. OTP for %s: %s (set SMTP_* env vars to send real emails)",
             user.email,
             otp,
         )
