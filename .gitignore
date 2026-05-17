@@ -18,3 +18,4 @@ ENV/
 *.egg-info/
 dist/
 build/
+.vercel
