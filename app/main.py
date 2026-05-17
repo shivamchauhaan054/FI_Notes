@@ -38,3 +38,10 @@ app.include_router(about.router)
 @app.get("/search", response_model=list[notes.NoteResponse], tags=["search"])
 def search_redirect(results=Depends(notes.search_notes)):
     return results
+@app.get("/")
+def root():
+    return {"message": "FI Notes Backend Running"}  
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
