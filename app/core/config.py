@@ -18,7 +18,11 @@ class Settings:
         return val.strip() if val else default
 
     @property
-    def database_url(self) -> str: return self._get_env("DATABASE_URL", "sqlite:///./notes.db")
+    def database_url(self) -> str: 
+        url = self._get_env("DATABASE_URL", "sqlite:///./notes.db")
+        if os.getenv("VERCEL") == "1" and "sqlite" in url and "/tmp/" not in url:
+            return "sqlite:////tmp/notes.db"
+        return url
     
     @property
     def secret_key(self) -> str: return self._get_env("SECRET_KEY", "change-me-in-production")
