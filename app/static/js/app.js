@@ -204,13 +204,7 @@ function formatDate(iso) {
   return d.toLocaleDateString() + " " + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-function showGuestView() {
-  $("#view-guest")?.classList.remove("hidden");
-  $("#view-app")?.classList.add("hidden");
-  $("#user-badge")?.classList.add("hidden");
-  $("#btn-logout")?.classList.add("hidden");
-  showAuthForms();
-}
+// NOTE: showGuestView is defined once below at line ~234
 
 async function showAppView() {
   $("#view-guest")?.classList.add("hidden");
@@ -238,6 +232,7 @@ function showGuestView() {
   $("#user-badge")?.classList.add("hidden");
   $("#btn-logout")?.classList.add("hidden");
   $("#btn-header-login")?.classList.remove("hidden");
+  showAuthForms();
 }
 
 function showAuthView() {
@@ -573,12 +568,21 @@ async function deleteNote(id) {
   }
 }
 
-$("#btn-google").addEventListener("click", (e) => {
+$("#btn-google").addEventListener("click", async (e) => {
   if (!googleOAuthEnabled) {
     e.preventDefault();
+    // Re-check status in real time before showing error
+    try {
+      const status = await api("/auth/status");
+      if (status.google_oauth_enabled) {
+        googleOAuthEnabled = true;
+        window.location.href = "/auth/google";
+        return;
+      }
+    } catch (_) {}
     showAlert(
       $("#auth-alert"),
-      "Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to .env, then restart the server.",
+      "Google sign-in is not available on this server. Please use email login.",
       "error"
     );
   }

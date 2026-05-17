@@ -1,5 +1,6 @@
 import logging
 import smtplib
+import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formataddr
@@ -41,7 +42,7 @@ def send_otp_email(to_email: str, otp: str, purpose: str = "verify your account"
 
     if not smtp_configured():
         logger.warning(
-            "SMTP not configured. OTP for %s: %s (set SMTP_* in .env to send real emails)",
+            "SMTP not configured. OTP for %s: %s (set SMTP_* env vars to send real emails)",
             to_email,
             otp,
         )
@@ -55,17 +56,27 @@ def send_otp_email(to_email: str, otp: str, purpose: str = "verify your account"
     message.attach(MIMEText(html, "html"))
 
     try:
-        logger.info("Connecting to SMTP server %s:%s...", settings.smtp_host, settings.smtp_port)
-        with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=30) as server:
-            if settings.smtp_use_tls:
-                server.starttls()
-            
-            logger.info("Logging in to SMTP as %s...", settings.smtp_user)
-            server.login(settings.smtp_user, settings.smtp_password)
-            
-            logger.info("Sending email to %s...", to_email)
-            server.sendmail(settings.smtp_from, [to_email], message.as_string())
-            
+        port = settings.smtp_port
+        logger.info("Connecting to SMTP server %s:%s...", settings.smtp_host, port)
+
+        # Use SMTP_SSL for port 465 (implicit TLS), STARTTLS for port 587
+        if port == 465:
+            ssl_context = ssl.create_default_context()
+            with smtplib.SMTP_SSL(settings.smtp_host, port, timeout=30, context=ssl_context) as server:
+                logger.info("Logging in to SMTP as %s...", settings.smtp_user)
+                server.login(settings.smtp_user, settings.smtp_password)
+                logger.info("Sending email to %s...", to_email)
+                server.sendmail(settings.smtp_from, [to_email], message.as_string())
+        else:
+            # Default: port 587 with STARTTLS
+            with smtplib.SMTP(settings.smtp_host, port, timeout=30) as server:
+                if settings.smtp_use_tls:
+                    server.starttls()
+                logger.info("Logging in to SMTP as %s...", settings.smtp_user)
+                server.login(settings.smtp_user, settings.smtp_password)
+                logger.info("Sending email to %s...", to_email)
+                server.sendmail(settings.smtp_from, [to_email], message.as_string())
+
         logger.info("OTP email successfully sent to %s", to_email)
     except smtplib.SMTPResponseException as exc:
         logger.error("SMTP Error %s: %s", exc.smtp_code, exc.smtp_error.decode() if hasattr(exc.smtp_error, 'decode') else exc.smtp_error)
@@ -73,3 +84,4 @@ def send_otp_email(to_email: str, otp: str, purpose: str = "verify your account"
     except Exception as exc:
         logger.error("Unexpected error sending OTP email to %s: %s", to_email, exc)
         raise
+
